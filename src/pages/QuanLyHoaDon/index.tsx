@@ -6,15 +6,15 @@ import { IColumn } from "@/components/Table/typing";
 import { xuatHoaDon } from "@/services/QuanLyHoaDon";
 import { ETrangThaiThanhToan, MapColorETrangThaiThanhToan } from "@/services/QuanLyHoaDon/constants";
 import { getFilenameHeader, inputFormat } from "@/utils/utils";
-import { DownloadOutlined } from "@ant-design/icons";
-import { Modal, Select, Tag } from "antd";
+import { CheckOutlined, DownloadOutlined, RollbackOutlined } from "@ant-design/icons";
+import { Modal, Popconfirm, Select, Tag } from "antd";
 import fileDownload from "js-file-download";
 import moment from "moment";
 import { useState } from "react";
 import { useModel } from "umi";
 
 const QuanLyHoaDonPage = () => {
-  const { getModel, page, limit, condition } = useModel("quanlyhoadon");
+  const { getModel, page, limit, condition, putModel } = useModel("quanlyhoadon");
 
   const [currentThang, setCurrentThang] = useState<number>(moment().month());
   const [currentNam, setCurrentNam] = useState<number>(moment().year());
@@ -77,42 +77,45 @@ const QuanLyHoaDonPage = () => {
       align: "center",
       width: 120,
       render: (val) => (val ? <Tag color={MapColorETrangThaiThanhToan?.[val as ETrangThaiThanhToan]}>{val}</Tag> : ""),
+      fixed: "right",
     },
-
-    // {
-    //   title: "Thao tác",
-    //   align: "center",
-    //   width: 90,
-    //   render: (val, rec) => (
-    //     <>
-    //       <ButtonExtend
-    //         tooltip="Chi tiết"
-    //         type="link"
-    //         icon={<EyeOutlined />}
-    //         onClick={() => handleView(rec)}
-    //       />
-    //       <ButtonExtend
-    //         tooltip="Chỉnh sửa"
-    //         type="link"
-    //         icon={<EditOutlined />}
-    //         onClick={() => handleEdit(rec)}
-    //       />
-    //       <Popconfirm
-    //         title={"Bạn có chắc chắn muốn xoá?"}
-    //         onConfirm={() => {
-    //           deleteModel(rec?._id, getData);
-    //         }}
-    //       >
-    //         <ButtonExtend
-    //           tooltip="Xoá"
-    //           type="link"
-    //           danger
-    //           icon={<DeleteOutlined />}
-    //         />
-    //       </Popconfirm>
-    //     </>
-    //   ),
-    // },
+    {
+      title: "Thao tác",
+      align: "center",
+      width: 90,
+      render: (val, rec) => (
+        <>
+          <Popconfirm
+            title={"Xác nhận hoàn tác lại thanh toán hóa đơn?"}
+            onConfirm={() => {
+              putModel(rec?._id, { trangThaiThanhToan: ETrangThaiThanhToan.CHUA_THANH_TOAN }, getData);
+            }}
+          >
+            <ButtonExtend
+              disabled={rec?.trangThaiThanhToan === ETrangThaiThanhToan.CHUA_THANH_TOAN}
+              tooltip="Hoàn tác"
+              type="link"
+              icon={<RollbackOutlined />}
+            />
+          </Popconfirm>
+          <Popconfirm
+            title={"Xác nhận đã thanh toán thành công hóa đơn?"}
+            onConfirm={() => {
+              putModel(rec?._id, { trangThaiThanhToan: ETrangThaiThanhToan.THANH_TOAN_DU }, getData);
+            }}
+          >
+            <ButtonExtend
+              disabled={rec?.trangThaiThanhToan === ETrangThaiThanhToan.THANH_TOAN_DU}
+              tooltip="Đã thanh toán"
+              type="link"
+              className="text-success"
+              icon={<CheckOutlined />}
+            />
+          </Popconfirm>
+        </>
+      ),
+      fixed: "right",
+    },
   ];
 
   const handleXuatHoaDon = async () => {

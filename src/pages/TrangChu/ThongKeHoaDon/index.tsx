@@ -74,7 +74,7 @@ const ThongKeHoaDonPage = () => {
   const handleXuatHoaDon = async () => {
     try {
       formWaiting("Hệ thống đang xử lý");
-      const res = await xuatHoaDon(currentThang + 1, currentNam);
+      const res = await xuatHoaDon(currentThang, currentNam);
       if (res) {
         fileDownload(res?.data, getFilenameHeader(res));
       }
